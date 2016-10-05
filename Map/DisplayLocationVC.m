@@ -114,7 +114,7 @@
                              MKPlacemark *placemark = [[MKPlacemark alloc] initWithPlacemark:topResult];
                              MKCoordinateRegion region = self.mapVw.region;
                              [self.mapVw setRegion:region animated:YES];
-                                                         [self.mapVw selectAnnotation:[self.mapVw.annotations objectAtIndex:0] animated:YES];
+                            [self.mapVw selectAnnotation:[self.mapVw.annotations objectAtIndex:0] animated:YES];
                              
                              
                              
@@ -157,8 +157,28 @@
                              [direction calculateDirectionsWithCompletionHandler:^(MKDirectionsResponse *response, NSError *error) {
                                  
                                  if (!error) {
-                                     for (MKRoute *route in [response routes]) {
+                                     for (MKRoute *route in [response routes])
+                                     {
                                          [self.mapVw addOverlay:[route polyline] level:MKOverlayLevelAboveRoads];
+                                         
+                                         // this will return lat - long between two notation
+                                         NSUInteger pointCount = route.polyline.pointCount;
+                                         //allocate a C array to hold this many points/coordinates...
+                                         CLLocationCoordinate2D *routeCoordinates= malloc(pointCount * sizeof(CLLocationCoordinate2D));
+                                         
+                                         //get the coordinates (all of them)...
+                                         [route.polyline getCoordinates:routeCoordinates range:NSMakeRange(0, pointCount)];
+                                         
+                                         //this part just shows how to use the results...
+                                         NSLog(@"route pointCount = %lu", (unsigned long)pointCount);
+                                         for (int c=0; c < pointCount; c++)
+                                         {
+                                             NSLog(@"routeCoordinates[%d] = %f, %f", 
+                                                   c, routeCoordinates[c].latitude, routeCoordinates[c].longitude);
+                                         }
+                                         
+                                         //free the memory used by the C array when done with it...
+                                         free(routeCoordinates);
                                      }
                                  }
                                  else
